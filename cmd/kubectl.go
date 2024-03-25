@@ -82,12 +82,12 @@ func runKubectl(ctx *cli.Context) error {
 			return err
 		}
 
-		config, err := c.ManagementClient.Cluster.ActionGenerateKubeconfig(cluster)
+		clusterConfig, err := c.ManagementClient.Cluster.ActionGenerateKubeconfig(cluster)
 		if err != nil {
 			return err
 		}
 
-		kubeConfigBytes := []byte(config.Config)
+		kubeConfigBytes := []byte(clusterConfig.Config)
 		kubeConfig, err = clientcmd.Load(kubeConfigBytes)
 		if err != nil {
 			return err

@@ -148,8 +148,10 @@ func (mc *MasterClient) newProjectClient() error {
 
 func (mc *MasterClient) newCAPIClient() error {
 	options := createClientOpts(mc.UserConfig)
-	options.URL = strings.TrimSuffix(options.URL, "/v3") + "/v1"
-
+	// options.URL = strings.TrimSuffix(options.URL, "/v3") + "/v1"
+	if !strings.HasSuffix(options.URL, "/v3") {
+		options.URL = options.URL + "/v1" // overwrite the URL to point to the v1 API if not v3 here
+	}
 	// Setup the CAPI client
 	cc, err := capiClient.NewClient(options)
 	if err != nil {
@@ -177,14 +179,16 @@ func createClientOpts(config *config.ServerConfig) *clientbase.ClientOpts {
 	serverURL := config.URL
 
 	if !strings.HasSuffix(serverURL, "/v3") {
-		serverURL = config.URL + "/v3"
+		config.URL += "/v3" // overwrite the URL to point to the v3 API
+		// serverURL = config.URL + "/v3"
 	}
 
 	options := &clientbase.ClientOpts{
-		URL:       serverURL,
+		URL:       config.URL,
 		AccessKey: config.AccessKey,
 		SecretKey: config.SecretKey,
 		CACerts:   config.CACerts,
+		Insecure:  config.Insecure,
 	}
 	return options
 }
