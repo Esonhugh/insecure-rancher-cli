@@ -50,7 +50,6 @@ func runKubectl(ctx *cli.Context) error {
 	if currentRancherServer == nil {
 		return fmt.Errorf("no focused server")
 	}
-
 	currentToken := currentRancherServer.AccessKey
 	t, err := c.ManagementClient.Token.ByID(currentToken)
 	if err != nil {
@@ -102,6 +101,18 @@ func runKubectl(ctx *cli.Context) error {
 		return err
 	}
 	defer os.Remove(tmpfile.Name())
+
+	if currentRancherServer.Insecure {
+		// set insecure so skip the insecure
+		// kubeConfig.Cluster[]
+		// kubeConfig.Clusters[kubeConfig.CurrentContext].InsecureSkipTLSVerify = true
+		// currentCluster := kubeConfig.Contexts[kubeConfig.CurrentContext].Cluster
+		// if insecure is sets, then set the cluster to insecure
+		for clusterName, _ := range kubeConfig.Clusters {
+			kubeConfig.Clusters[clusterName].InsecureSkipTLSVerify = true
+			kubeConfig.Clusters[clusterName].CertificateAuthorityData = nil
+		}
+	}
 
 	if err := clientcmd.WriteToFile(*kubeConfig, tmpfile.Name()); err != nil {
 		return err
